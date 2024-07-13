@@ -7,7 +7,7 @@ import {
   ChatMessageModel,
 } from './models/message.model';
 import { ChatMessage, PaginatedChatMessages } from './models/message.entity';
-import { MessageDto, GetMessageDto } from './models/message.dto';
+import { MessageDto, GetMessageDto, SearchByTagsDto } from './models/message.dto';
 import { ObjectID } from 'mongodb';
 import { createRichContent } from './utils/message.helper';
 import { MessageGroupedByConversationOutput } from '../conversation/models/messagesFilterInput';
@@ -164,6 +164,54 @@ export class MessageData {
     );
     if (!unlike) throw new Error('The message to unlike does not exist');
     return chatMessageToObject(unlike);
+  }
+
+  async tag(messageId: ObjectID, tags: Array<string>): Promise<ChatMessage> {
+    const query = { _id: messageId };
+    const updateDocument = { tags: tags.filter((tag, i) => tags.indexOf(tag) == i) };
+    const tagged = await this.chatMessageModel.findOneAndUpdate(
+      query,
+      updateDocument,
+      {
+        new: true,
+        returnOriginal: false,
+      },
+    );
+    if (!tagged) throw new Error('The message to tag does not exist');
+    return chatMessageToObject(tagged);
+  }
+
+  async searchByTags(searchByTagsDto: SearchByTagsDto): Promise<PaginatedChatMessages> { 
+    // Taken from getChatConversationMessages
+    let hasMore = false;
+
+    if (searchByTagsDto.limit === 0) searchByTagsDto.limit = 40;
+    const hasMoreLimit: number = searchByTagsDto.limit + 1;
+
+    const query: FilterQuery<ChatMessageDocument> = {
+      conversationId: searchByTagsDto.conversationId,
+      tags: { $all: searchByTagsDto.tags }
+    };
+
+    if (searchByTagsDto.offsetId) {
+      query['_id'] = { $lt: searchByTagsDto.offsetId };
+    }
+
+    const result: ChatMessageDocument[] = await this.chatMessageModel
+      .find(query)
+      .limit(hasMoreLimit)
+      .sort({
+        _id: -1,
+      });
+      
+    if (result.length === hasMoreLimit) {
+      result.splice(searchByTagsDto.limit);
+      hasMore = true;
+    }
+
+    result.reverse();
+
+    return { messages: result.map(chatMessageToObject), hasMore };
   }
 
   async addReaction(

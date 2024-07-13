@@ -164,6 +164,7 @@ class MockMessageLogic {
       deleted: false,
       likes: [],
       likesCount: 0,
+      tags: [],
       resolved: false,
     };
   }

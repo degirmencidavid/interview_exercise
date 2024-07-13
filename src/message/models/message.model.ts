@@ -145,6 +145,9 @@ export class ChatMessageModel {
   @Prop()
   likes: Array<ObjectID>;
 
+  @Prop()
+  tags: Array<string>;
+
   @Prop({ type: RichMessageContent })
   richContent?: RichMessageContent;
 

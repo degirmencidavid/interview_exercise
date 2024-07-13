@@ -17,6 +17,7 @@ export class ChatMessageDataLoader
       sender: { id: '' },
       likes: [],
       likesCount: 0,
+      tags: [],
       created: new Date(),
       deleted: false,
       resolved: false,

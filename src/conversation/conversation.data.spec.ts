@@ -841,6 +841,7 @@ describe('ConversationData', () => {
               likesCount: 1,
               deleted: false,
               likes: [],
+              tags: [],
               resolved: false,
             },
             {
@@ -851,6 +852,7 @@ describe('ConversationData', () => {
               likesCount: 1,
               deleted: false,
               likes: [],
+              tags: [],
               resolved: false,
             },
           ]),

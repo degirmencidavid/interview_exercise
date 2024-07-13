@@ -968,6 +968,12 @@
                     "likesCount": {
                         "type": "number"
                     },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
                     "richContent": {
                         "$ref": "#/components/schemas/RichMessageContent"
                     },
@@ -989,7 +995,8 @@
                     "deleted",
                     "resolved",
                     "likes",
-                    "likesCount"
+                    "likesCount",
+                    "tags"
                 ]
             },
             "ChatConversation": {

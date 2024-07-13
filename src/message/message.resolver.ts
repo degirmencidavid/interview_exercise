@@ -21,6 +21,8 @@ import {
   LikeMessageDto,
   ResolveMessageDto,
   ReactionDto,
+  TagMessageDto,
+  SearchByTagsDto,
 } from './models/message.dto';
 import { MessageLogic } from './message.logic';
 import {
@@ -139,6 +141,24 @@ export class MessageResolver {
     @AuthenticatedUser() authenticatedUser: IAuthenticatedUser,
   ): Promise<ChatMessage> {
     return await this.messageLogic.unlike(likeMessageDto, authenticatedUser);
+  }
+
+  @Mutation(() => ChatMessage)
+  @UseGuards(GqlAuthGuard)
+  async tagConversationMessage(
+    @Args('tagMessageDto') tagMessageDto: TagMessageDto,
+    @AuthenticatedUser() authenticatedUser: IAuthenticatedUser,
+  ): Promise<ChatMessage> {
+    return await this.messageLogic.tag(tagMessageDto, authenticatedUser);
+  }
+
+  @Mutation(() => ChatMessage)
+  @UseGuards(GqlAuthGuard)
+  async searchConversationMessagesByTags(
+    @Args('searchByTagsDto') searchByTagsDto: SearchByTagsDto,
+    @AuthenticatedUser() authenticatedUser: IAuthenticatedUser,
+  ): Promise<PaginatedChatMessages> {
+    return await this.messageLogic.searchByTags(searchByTagsDto, authenticatedUser);
   }
 
   @Mutation(() => ChatMessage)

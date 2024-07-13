@@ -164,6 +164,24 @@ export class LikeMessageDto {
 }
 
 @InputType()
+export class TagMessageDto {
+  @Field(() => ObjectID)
+  messageId: ObjectID;
+
+  @Field(() => ObjectID)
+  conversationId: ObjectID;
+
+  @Field(() => [String])
+  tags: Array<string>
+}
+
+@InputType()
+export class SearchByTagsDto extends GetMessageDto {
+  @Field(() => [String])
+  tags: Array<string>
+}
+
+@InputType()
 export class ReactionDto {
   @Field(() => String)
   reaction: string;

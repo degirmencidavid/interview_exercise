@@ -16,6 +16,7 @@ import {
   ReactedMessageEvent,
   ResolveMessageEvent,
   SendMessageEvent,
+  TagMessageEvent,
   UnReactedMessageEvent,
   UnlikeMessageEvent,
   UnresolveMessageEvent,
@@ -67,6 +68,11 @@ const validUser: IAuthenticatedUser = {
   accountRole: 'university',
   universityId: new ObjectId('abcdef123456abcdef000123'),
 };
+const senderUser: IAuthenticatedUser = {
+  userId: new ObjectId('5fe0cce861c8ea54018385af'),
+  accountRole: 'university',
+  universityId: new ObjectId('abcdef123456abcdef000123'),
+};
 
 const messageId = new ObjectId('5fe0cce861c8ea54018385aa');
 const replyMessageId = new ObjectId('5fe0cce861c8ea54018385ab');
@@ -74,6 +80,7 @@ const senderId = new ObjectId('5fe0cce861c8ea54018385af');
 const senderIdTwo = new ObjectId('5fe0cce861c8ea54018385bc');
 const conversationId = new ObjectId('5fe0cce861c8ea54018385ae');
 const created = new Date('2018-05-11T17:47:40.893Z');
+const tags = ["Important", "Urgent", "Surprise"];
 const USER_ID_BLOCKED = new ObjectId('abcdef123456abcdef000001');
 const USER_ID_BLOCKING = new ObjectId('abcdef123456abcdef000002');
 const SCOPE = 'university';
@@ -132,6 +139,7 @@ const replyMessageModel: ChatMessageModel = {
   resolved: false,
   likes: [],
   likesCount: 0,
+  tags: [],
 };
 
 const USER_BLOCK_DTO = {
@@ -162,6 +170,7 @@ describe('MessageLogic', () => {
     resolved: false,
     likes: [],
     likesCount: 0,
+    tags: [],
   };
 
   const mockGifMessage = {
@@ -192,6 +201,7 @@ describe('MessageLogic', () => {
     resolved: false,
     likes: [],
     likesCount: 0,
+    tags: [],
     richContent: {
       reply: {
         id: messageId,
@@ -319,6 +329,23 @@ describe('MessageLogic', () => {
       };
     }
 
+    tag(messageId: ObjectID, tags: Array<string>) {
+      return {
+        _id: messageId,
+        text: 'Message 1',
+        senderId,
+        conversationId,
+        created: new Date('2018-05-11T17:47:40.893Z'),
+        sender: { id: '5fe0cce861c8ea54018385af' },
+        conversation: { id: '5fe0cce861c8ea54018385ae' },
+        id: messageId,
+        deleted: false,
+        resolved: false,
+        likes: [],
+        tags: [],
+      };
+    }
+
     getChatConversationMessages(
       data: GetMessageDto,
     ): Promise<PaginatedChatMessages> {
@@ -337,6 +364,7 @@ describe('MessageLogic', () => {
           resolved: false,
           likes: [],
           likesCount: 0,
+          tags: [],
           isSenderBlocked: false,
         },
 
@@ -353,6 +381,7 @@ describe('MessageLogic', () => {
           resolved: false,
           likes: [],
           likesCount: 0,
+          tags: [],
           isSenderBlocked: false,
         },
       ];
@@ -1126,6 +1155,41 @@ describe('MessageLogic', () => {
       );
 
       expect(messageData.unlike).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('tag', () => {
+    it('can tag a message with sockets', async () => {
+      jest.spyOn(messageData, 'tag');
+      await messageLogic.tag(
+        { messageId, conversationId, tags },
+        senderUser,
+      );
+
+      const tagMessageEvent = new TagMessageEvent({
+        messageId,
+        tags,
+      });
+
+      expect(conversationChannel.send).toHaveBeenCalledWith(
+        tagMessageEvent,
+        conversationId.toHexString(),
+      );
+      expect(messageData.tag).toHaveBeenCalledTimes(1);
+    });
+    
+    it('cannot tag a message if user is not sender', async () => {
+      jest.spyOn(messageData, 'tag');
+      const result = messageLogic.tag(
+        { messageId, conversationId, tags },
+        validUser,
+      );
+
+      await expect(result).rejects.toThrow(
+        'User is not authorised to perform this action',
+      );
+      expect(conversationChannel.send).not.toHaveBeenCalled();
+      expect(messageData.tag).not.toHaveBeenCalled();
     });
   });
 

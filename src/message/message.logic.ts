@@ -13,6 +13,8 @@ import {
   ResolveMessageDto,
   ReactionDto,
   PollOptionDto,
+  TagMessageDto,
+  SearchByTagsDto,
 } from './models/message.dto';
 import { MessageData } from './message.data';
 import { IAuthenticatedUser } from '../authentication/jwt.strategy';
@@ -29,6 +31,7 @@ import {
   UnresolveMessageEvent,
   ReactedMessageEvent,
   UnReactedMessageEvent,
+  TagMessageEvent,
 } from '../conversation/conversation-channel.socket';
 import { UserService } from '../user/user.service';
 import { ConversationData } from '../conversation/conversation.data';
@@ -490,6 +493,58 @@ export class MessageLogic implements IMessageLogic {
     );
 
     return message;
+  }
+
+  async tag(
+    tagMessageDto: TagMessageDto,
+    authenticatedUser: IAuthenticatedUser,
+  ) {
+    await this.throwForbiddenErrorIfNotAuthorized(
+      authenticatedUser,
+      tagMessageDto.messageId,
+      Action.readConversation,
+    );
+
+    const message = await this.messageData.getMessage(tagMessageDto.messageId.toHexString());
+    const user = await this.userService.getUser(authenticatedUser.userId.toHexString());
+    if (message.sender.id !== user.id) {
+      throw new ForbiddenError('User is not authorised to perform this action');
+    }
+
+    const taggedMessage = await this.messageData.tag(
+      tagMessageDto.messageId,
+      tagMessageDto.tags,
+    );
+
+    const tagMessageEvent = new TagMessageEvent({
+      messageId: tagMessageDto.messageId,
+      tags: tagMessageDto.tags,
+    });
+    this.conversationChannel.send(
+      tagMessageEvent,
+      tagMessageDto.conversationId.toHexString(),
+    );
+
+    return taggedMessage;
+  }
+
+  async searchByTags(
+    searchByTagsDto: SearchByTagsDto,
+    authenticatedUser: IAuthenticatedUser,
+  ): Promise<PaginatedChatMessages> {
+    if (
+      !(await this.permissions.conversationPermissions({
+        user: authenticatedUser,
+        conversationId: String(searchByTagsDto.conversationId),
+        action: Action.readConversation,
+      }))
+    ) {
+      throw new ForbiddenError(
+        `User is not authorised to read this conversation`,
+      );
+    }
+
+    return await this.messageData.searchByTags(searchByTagsDto);
   }
 
   private async throwForbiddenErrorIfNotAuthorized(

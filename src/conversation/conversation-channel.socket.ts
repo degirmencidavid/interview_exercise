@@ -24,6 +24,10 @@ export class UnlikeMessageEvent implements BaseEventType {
   public name = 'unlike-message';
   constructor(public message: { userId: ObjectId; messageId: ObjectId }) {}
 }
+export class TagMessageEvent implements BaseEventType {
+  public name = 'tag-message';
+  constructor(public message: { messageId: ObjectId; tags: Array<string>}) {}
+}
 
 export class ReactedMessageEvent implements BaseEventType {
   public name = 'reacted-message';
@@ -84,6 +88,7 @@ type EventType =
   | DeleteMessageEvent
   | LikeMessageEvent
   | UnlikeMessageEvent
+  | TagMessageEvent
   | PinMessageEvent
   | UnpinMessageEvent
   | UserLeftConversationEvent

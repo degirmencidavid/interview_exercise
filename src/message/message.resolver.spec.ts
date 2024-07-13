@@ -48,6 +48,7 @@ const chatMessage: ChatMessage = {
   resolved: false,
   likes: [],
   likesCount: 0,
+  tags: [],
 };
 
 describe('MessageResolver', () => {
@@ -128,6 +129,7 @@ describe('MessageResolver', () => {
             resolved: false,
             likes: [],
             likesCount: 0,
+            tags: [],
             created: new Date('2020-12-31'),
             id,
             text: 'a chat message',
@@ -142,6 +144,7 @@ describe('MessageResolver', () => {
             resolved: false,
             likes: [],
             likesCount: 0,
+            tags: [],
             created: new Date('2020-12-31'),
             id,
             text: 'a chat message',
@@ -157,6 +160,7 @@ describe('MessageResolver', () => {
             resolved: false,
             likes: [],
             likesCount: 0,
+            tags: [],
             created: new Date('2020-12-31'),
             id,
             text: 'a reply message',
@@ -301,6 +305,7 @@ describe('MessageResolver', () => {
           id,
           likes: [],
           likesCount: 0,
+          tags: [],
           sender: { id: senderId.toHexString() },
           text: 'a chat message',
         },
@@ -331,6 +336,7 @@ describe('MessageResolver', () => {
           id,
           likes: [],
           likesCount: 0,
+          tags: [],
           richContent: {},
           sender: { id: senderId.toHexString() },
           text: 'a chat message',
@@ -362,6 +368,7 @@ describe('MessageResolver', () => {
           id,
           likes: [],
           likesCount: 0,
+          tags: [],
           richContent: {
             reply: {
               id: replyMessageId,
